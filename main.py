@@ -13,15 +13,6 @@ engine = create_async_engine(DATABASE_URL, echo=True, future=True)
 AsyncSessionLocal = sessionmaker(engine, expire_on_commit=False, class_=AsyncSession)
 
 @app.get("/check-db")
-async def check_db():
-    try:
-        async with engine.begin() as conn:
-            await conn.execute(text("SELECT 1"))
-        return {"status": "ok", "message": "Connected to the database!"}
-    except Exception as e:
-        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
-
-@app.get("/select-demo")
 async def select_demo():
     try:
         async with AsyncSessionLocal() as session:

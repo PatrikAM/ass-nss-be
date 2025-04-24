@@ -47,3 +47,23 @@ async def db_schema():
         return {"status": "ok", "schema": schema}
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+@app.get("/measurements")
+async def read_measurements():
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT * FROM measurement"))
+            measurements = [dict(row._mapping) for row in result.fetchall()]
+        return {"measurements": measurements}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+@app.get("/config")
+async def read_config():
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT * FROM config"))
+            config = [dict(row._mapping) for row in result.fetchall()]
+        return {"config": config}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})

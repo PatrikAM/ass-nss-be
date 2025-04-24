@@ -67,3 +67,24 @@ async def read_config():
         return {"config": config}
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+@app.post("/config")
+async def create_config(interval: int, frequency: float, rgb_camera: bool, hsi_camera: bool):
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("INSERT INTO config (interval, frequency, rgb_camera, hsi_camera) VALUES (:interval, :frequency, :rgb_camera, :hsi_camera) RETURNING *"), {"interval": interval, "frequency": frequency, "rgb_camera": rgb_camera, "hsi_camera": hsi_camera})
+            config = [dict(row._mapping) for row in result.fetchall()]
+        return {"config": config}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+@app.post("/measurements")
+async def create_measurement(snapshot_rgb_camera: str, snapshot_hsi_camera: str, acustic: int, config_id: int):
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("INSERT INTO measurement (snapshot_rgb_camera, snapshot_hsi_camera, acustic, config_id) VALUES (:snapshot_rgb_camera, :snapshot_hsi_camera, :acustic, :config_id) RETURNING *"), {"snapshot_rgb_camera": snapshot_rgb_camera, "snapshot_hsi_camera": snapshot_hsi_camera, "acustic": acustic, "config_id": config_id})
+            measurement = [dict(row._mapping) for row in result.fetchall()]
+        return {"measurement": measurement}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+    

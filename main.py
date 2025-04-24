@@ -30,3 +30,29 @@ async def select_demo():
         return {"status": "ok", "result": dict(row._mapping) if row else None}
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+@app.get("/db-schema")
+async def db_schema():
+    try:
+        async with AsyncSessionLocal() as session:
+            # Get all table names in the public schema
+            tables_result = await session.execute(text("""
+                SELECT table_name FROM information_schema.tables
+                WHERE table_schema = 'public' AND table_type = 'BASE TABLE'
+            """))
+            table_names = [row[0] for row in tables_result.fetchall()]
+
+            schema = {}
+            for table in table_names:
+                columns_result = await session.execute(text(f"""
+                    SELECT column_name, data_type
+                    FROM information_schema.columns
+                    WHERE table_schema = 'public' AND table_name = :table
+                """), {"table": table})
+                columns = [
+                    {"name": col[0], "type": col[1]} for col in columns_result.fetchall()
+                ]
+                schema[table] = columns
+        return {"status": "ok", "schema": schema}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})

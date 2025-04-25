@@ -88,3 +88,33 @@ async def create_measurement(snapshot_rgb_camera: str, snapshot_hsi_camera: str,
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
     
+@app.get("/config/{config_id}")
+async def read_config(config_id: int):
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT * FROM config WHERE id = :config_id"), {"config_id": config_id})
+            config = [dict(row._mapping) for row in result.fetchall()]
+        return {"config": config}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+@app.get("/measurements/{config_id}")
+async def read_measurements(config_id: int):
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT * FROM measurement WHERE config_id = :config_id"), {"config_id": config_id})
+            measurements = [dict(row._mapping) for row in result.fetchall()]
+        return {"measurements": measurements}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+
+@app.get("/measurements/{measurement_id}")
+async def read_measurement(measurement_id: int):
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(text("SELECT * FROM measurement WHERE id = :measurement_id"), {"measurement_id": measurement_id})
+            measurement = [dict(row._mapping) for row in result.fetchall()]
+        return {"measurement": measurement}
+    except Exception as e:
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
+

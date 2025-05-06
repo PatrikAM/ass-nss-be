@@ -69,7 +69,7 @@ async def read_config():
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 @app.post("/config")
-async def create_config(interval: int, frequency: float, rgb_camera: bool, hsi_camera: bool):
+async def create_config(interval: int | None = None, frequency: float | None = None, rgb_camera: bool | None = None, hsi_camera: bool | None = None):
     try:
         async with AsyncSessionLocal() as session:
             result = await session.execute(text("INSERT INTO config (interval, frequency, rgb_camera, hsi_camera) VALUES (:interval, :frequency, :rgb_camera, :hsi_camera) RETURNING *"), {"interval": interval, "frequency": frequency, "rgb_camera": rgb_camera, "hsi_camera": hsi_camera})
@@ -79,7 +79,7 @@ async def create_config(interval: int, frequency: float, rgb_camera: bool, hsi_c
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 @app.post("/measurements")
-async def create_measurement(snapshot_rgb_camera: str, snapshot_hsi_camera: str, acustic: int, config_id: int):
+async def create_measurement(snapshot_rgb_camera: str | None = None, snapshot_hsi_camera: str | None = None, acustic: int | None = None, config_id: int | None = None):
     try:
         async with AsyncSessionLocal() as session:
             result = await session.execute(text("INSERT INTO measurement (snapshot_rgb_camera, snapshot_hsi_camera, acustic, config_id) VALUES (:snapshot_rgb_camera, :snapshot_hsi_camera, :acustic, :config_id) RETURNING *"), {"snapshot_rgb_camera": snapshot_rgb_camera, "snapshot_hsi_camera": snapshot_hsi_camera, "acustic": acustic, "config_id": config_id})

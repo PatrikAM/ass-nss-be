@@ -4,6 +4,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
+from datetime import datetime
 
 from settings import DATABASE_URL
 
@@ -72,17 +73,19 @@ async def read_config():
 async def create_config(interval: int | None = None, frequency: float | None = None, rgb_camera: bool | None = None, hsi_camera: bool | None = None):
     try:
         async with AsyncSessionLocal() as session:
-            result = await session.execute(text("INSERT INTO config (interval, frequency, rgb_camera, hsi_camera) VALUES (:interval, :frequency, :rgb_camera, :hsi_camera) RETURNING *"), {"interval": interval, "frequency": frequency, "rgb_camera": rgb_camera, "hsi_camera": hsi_camera})
+            result = await session.execute(text("INSERT INTO config (interval, frequency, rgb_camera, hsi_camera, created_at) VALUES (:interval, :frequency, :rgb_camera, :hsi_camera, :created_at) RETURNING *"), {"interval": interval, "frequency": frequency, "rgb_camera": rgb_camera, "hsi_camera": hsi_camera, "created_at": datetime.now()})
+            await session.commit()
             config = [dict(row._mapping) for row in result.fetchall()]
         return {"config": config}
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 @app.post("/measurements")
-async def create_measurement(snapshot_rgb_camera: str | None = None, snapshot_hsi_camera: str | None = None, acustic: int | None = None, config_id: int | None = None):
+async def create_measurement(snapshot_rgb_camera: str | None = None, snapshot_hsi_camera: str | None = None, acustic: int | None = None, config_id: int | None = None, created_at: datetime | None = datetime.now()):
     try:
         async with AsyncSessionLocal() as session:
-            result = await session.execute(text("INSERT INTO measurement (snapshot_rgb_camera, snapshot_hsi_camera, acustic, config_id) VALUES (:snapshot_rgb_camera, :snapshot_hsi_camera, :acustic, :config_id) RETURNING *"), {"snapshot_rgb_camera": snapshot_rgb_camera, "snapshot_hsi_camera": snapshot_hsi_camera, "acustic": acustic, "config_id": config_id})
+            result = await session.execute(text("INSERT INTO measurement (snapshot_rgb_camera, snapshot_hsi_camera, acustic, config_id, created_at) VALUES (:snapshot_rgb_camera, :snapshot_hsi_camera, :acustic, :config_id, :created_at) RETURNING *"), {"snapshot_rgb_camera": snapshot_rgb_camera, "snapshot_hsi_camera": snapshot_hsi_camera, "acustic": acustic, "config_id": config_id, "created_at": created_at})
+            await session.commit()
             measurement = [dict(row._mapping) for row in result.fetchall()]
         return {"measurement": measurement}
     except Exception as e:
@@ -117,4 +120,3 @@ async def read_measurement(measurement_id: int):
         return {"measurement": measurement}
     except Exception as e:
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
-

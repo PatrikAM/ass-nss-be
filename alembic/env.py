@@ -3,10 +3,11 @@ from logging.config import fileConfig
 from sqlalchemy import pool
 from sqlalchemy.ext.asyncio import create_async_engine
 import asyncio
+import os
 
 from alembic import context
 
-from settings import DATABASE_URL
+DATABASE_URL = os.environ["DATABASE_URL"]
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

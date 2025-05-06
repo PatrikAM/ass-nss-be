@@ -1,5 +1,13 @@
-#!/bin/sh
+#!/bin/bash
 set -e
 
+echo "▶ Running migrations..."
 alembic upgrade head
-uvicorn main:app --host 0.0.0.0 --port 8000
+
+if [ "$RUN_TESTS" = "1" ]; then # Pro automatické spouštění testů
+  echo "▶ Running tests..."
+  pytest -q
+  exit $?
+fi
+
+exec "$@"

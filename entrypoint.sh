@@ -1,7 +1,4 @@
-#!/bin/bash
-# Convert CRLF → LF for this script when mounted from Windows
-dos2unix "$0" >/dev/null 2>&1 || true
-
+#!/usr/bin/env bash
 set -e
 
 echo "▶ Running migrations..."
@@ -13,4 +10,4 @@ if [ "$RUN_TESTS" = "1" ]; then
   exit $?
 fi
 
-exec "$@"
+exec "${@}"

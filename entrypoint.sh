@@ -1,4 +1,6 @@
 #!/bin/bash
+# Self-normalize this script’s line endings
+sed -i 's/\r$//' "$0"
 # Normalize line endings in scripts, Python files, and Alembic migrations
 find /app -type f \( -name "*.sh" -o -name "*.py" -o -name "*.ini" -o -path "/app/alembic/*" \) -exec sed -i 's/\r$//' {} +
 set -e

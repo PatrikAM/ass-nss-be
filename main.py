@@ -1,13 +1,9 @@
-import os
-import traceback
 from datetime import datetime
-from fastapi import FastAPI, status, Body, Depends
+from fastapi import FastAPI, status, Depends
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
 from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
-from typing import Annotated
-from pydantic import Field
 from pydantic import BaseModel
 from collections.abc import AsyncGenerator
 
@@ -80,7 +76,6 @@ async def read_measurements(session: AsyncSession = Depends(get_db_session)):
 @app.get("/config", status_code=status.HTTP_200_OK)
 async def read_config(session: AsyncSession = Depends(get_db_session)):
     try:
-        print("GET /config called")
         result = await session.execute(text("SELECT * FROM config"))
         config = [dict(row._mapping) for row in result.fetchall()]
         return {"config": config}
@@ -105,8 +100,7 @@ async def create_config(payload: ConfigCreateRequest, session: AsyncSession = De
         config = [dict(row._mapping) for row in result.fetchall()]
         return {"config": config}
     except Exception as e:
-        import traceback
-        print(traceback.format_exc())
+        print(e)
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 @app.post("/measurements", status_code=status.HTTP_201_CREATED)
@@ -120,7 +114,7 @@ async def create_measurement(snapshot_rgb_camera: str | None = None, snapshot_hs
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
 @app.get("/config/{config_id}", status_code=status.HTTP_200_OK)
-async def read_config(config_id: int, session: AsyncSession = Depends(get_db_session)):
+async def read_config_by_id(config_id: int, session: AsyncSession = Depends(get_db_session)):
     try:
         result = await session.execute(text("SELECT * FROM config WHERE id = :config_id"), {"config_id": config_id})
         config = [dict(row._mapping) for row in result.fetchall()]
@@ -145,6 +139,6 @@ async def read_measurement_by_id(measurement_id: int, session: AsyncSession = De
             )
         return {"measurement": dict(measurement._mapping)}
     except Exception as e:
-        print(traceback.format_exc())
+        print(e)
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 

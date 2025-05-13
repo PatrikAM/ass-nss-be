@@ -1,6 +1,9 @@
 #!/bin/bash
-# Remove Windows CRLF line endings from this script
-sed -i 's/\r$//' "$0"
+# Convert this script and Alembic migrations to LF line endings
+if command -v dos2unix >/dev/null 2>&1; then
+  dos2unix "${BASH_SOURCE[0]}"
+  find /app/alembic -type f -exec dos2unix {} +
+fi
 
 set -e
 

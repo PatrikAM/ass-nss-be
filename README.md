@@ -34,9 +34,42 @@ pytest test_main.py
 Run the full test suite including integration tests by setting the RUN_TESTS environment variable:
 
 ```bash
-# Locally
+# Locally (macOS/Linux)
 RUN_TESTS=1 pytest test_main.py
 
+export RUN_TESTS=1
+pytest test_main.py
+```
+
+```bash
 # With Docker Compose
 docker-compose run --rm -e RUN_TESTS=1 fastapi
+```
+
+### Windows
+
+**CMD (cmd.exe)**
+
+```bat
+set RUN_TESTS=1
+pytest test_main.py
+```
+
+Or in one line:
+
+```bat
+set RUN_TESTS=1&& pytest test_main.py
+```
+
+**PowerShell**
+
+```powershell
+$Env:RUN_TESTS = "1"
+pytest test_main.py
+```
+
+For Docker Compose in PowerShell:
+
+```powershell
+$Env:RUN_TESTS = "1"; docker-compose run --rm fastapi
 ```

@@ -8,13 +8,10 @@ WORKDIR /app
 # Copy application code and normalize line endings
 COPY . .
 RUN find . -type f -exec dos2unix {} +
+RUN chmod +x entrypoint.sh
 
 # Install Python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy and make the entrypoint script executable
-COPY entrypoint.sh .
-RUN chmod +x entrypoint.sh
 
 # Use Bash to run our entrypoint script
 ENTRYPOINT ["bash", "/app/entrypoint.sh"]

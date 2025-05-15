@@ -115,7 +115,14 @@ async def create_config(payload: ConfigCreateRequest, session: AsyncSession = De
 @app.post("/measurements", status_code=status.HTTP_201_CREATED)
 async def create_measurement(snapshot_rgb_camera: str | None = None, snapshot_hsi_camera: str | None = None, acustic: int | None = None, config_id: int | None = None, created_at: datetime | None = datetime.now(), session: AsyncSession = Depends(get_db_session)):
     try:
-        result = await session.execute(text("INSERT INTO measurement (snapshot_rgb_camera, snapshot_hsi_camera, acustic, config_id, created_at) VALUES (:snapshot_rgb_camera, :snapshot_hsi_camera, :acustic, :config_id, :created_at) RETURNING *"), {"snapshot_rgb_camera": snapshot_rgb_camera, "snapshot_hsi_camera": snapshot_hsi_camera, "acustic": acustic, "config_id": config_id, "created_at": created_at})
+        snapshot_hsi_camera_preprocessed = snapshot_hsi_camera
+        if snapshot_hsi_camera == "None":
+            snapshot_hsi_camera_preprocessed = None
+        snapshot_rgb_camera_preprocessed = snapshot_rgb_camera
+        if snapshot_rgb_camera == "None":
+            snapshot_rgb_camera_preprocessed = None
+        date = datetime.now()
+        result = await session.execute(text("INSERT INTO measurement (snapshot_rgb_camera, snapshot_hsi_camera, acustic, config_id, created_at) VALUES (:snapshot_rgb_camera, :snapshot_hsi_camera, :acustic, :config_id, :created_at) RETURNING *"), {"snapshot_rgb_camera": snapshot_rgb_camera_preprocessed, "snapshot_hsi_camera": snapshot_hsi_camera_preprocessed, "acustic": acustic, "config_id": config_id, "created_at": date})
         await session.commit()
         measurement = [dict(row._mapping) for row in result.fetchall()]
         return {"measurement": measurement}

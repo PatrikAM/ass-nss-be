@@ -6,6 +6,7 @@ from sqlalchemy import text
 from sqlalchemy.orm import sessionmaker
 from pydantic import BaseModel
 from collections.abc import AsyncGenerator
+from fastapi.middleware.cors import CORSMiddleware
 
 from settings import DATABASE_URL
 
@@ -22,6 +23,14 @@ async def get_db_session() -> AsyncGenerator[AsyncSession, None]:
         yield session
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 class ConfigCreateRequest(BaseModel):
@@ -117,7 +126,7 @@ async def create_measurement(snapshot_rgb_camera: str | None = None, snapshot_hs
 async def read_config_by_id(config_id: int, session: AsyncSession = Depends(get_db_session)):
     try:
         result = await session.execute(text("SELECT * FROM config WHERE id = :config_id"), {"config_id": config_id})
-        config = [dict(row._mapping) for row in result.fetchall()]
+        config = [dict(row._mapping) for row in result.fetchall()][0]
         if not config:
             return JSONResponse(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -142,3 +151,17 @@ async def read_measurement_by_id(measurement_id: int, session: AsyncSession = De
         print(e)
         return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})
 
+@app.get("/measurement/{config_id}", status_code=status.HTTP_200_OK)
+async def read_measurement_by_config_id(config_id: int, session: AsyncSession = Depends(get_db_session)):
+    try:
+        result = await session.execute(text("SELECT * FROM measurement WHERE config_id = :config_id"), {"config_id": config_id})
+        measurement = result.fetchall()
+        if not measurement:
+            return JSONResponse(
+                status_code=status.HTTP_404_NOT_FOUND,
+                content={"status": "error", "message": f"Measurement with config id {config_id} not found"}
+            )
+        return {"measurement": [dict(row._mapping) for row in measurement]}
+    except Exception as e:
+        print(e)
+        return JSONResponse(status_code=500, content={"status": "error", "message": str(e)})

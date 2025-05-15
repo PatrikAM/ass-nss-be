@@ -1,0 +1,9 @@
+# Normalize shell scripts to LF
+*.sh text eol=lf
+
+# Normalize our entrypoint and Dockerfile to LF
+entrypoint.sh text eol=lf
+Dockerfile text eol=lf
+
+# Use CRLF for Windows batch files
+*.bat text eol=crlf
